@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+message CarState {
+  message Position {
+    int32 row_idx = 1;
+    int32 col_idx = 2;
+  }
+  int32 car_id = 1;
+  int32 seq = 2;
+  Position cur_pos = 3;
+  Position last_pos = 4;
+  Position dst_pos = 5;
+}
+
+message Step {
+  enum StepCode {
+    STOP = 0;
+    LEFT = 1;
+    RIGHT = 2;
+    FORWARD = 3;
+    BACKWARD = 4;
+  }
+  StepCode step_code = 1;
+}
+
+service Guide {
+  rpc GetNextStep(CarState) returns (Step) {}
+}
