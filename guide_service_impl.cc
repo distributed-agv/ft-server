@@ -3,6 +3,7 @@
 #include "hiredis/hiredis.h"
 #include "util.h"
 #include <grpc/grpc.h>
+#include <cstdlib>
 
 
 GuideServiceImpl::GuideServiceImpl(int car_num, IntPair boundary, const std::string &redis_host, int redis_port,
@@ -12,7 +13,8 @@ GuideServiceImpl::GuideServiceImpl(int car_num, IntPair boundary, const std::str
 
 GuideServiceImpl::~GuideServiceImpl() {}
 
-grpc::Status GuideServiceImpl::GetNextStep(grpc::ServerContext * service_context, const CarState *car_state, Step *step) {
+grpc::Status GuideServiceImpl::GetNextStep(grpc::ServerContext *service_context,
+                                           const CarState *car_state, Step *step) {
   int car_id = car_state->car_id();
   int seq = car_state->seq();
   IntPair cur_pos(car_state->cur_pos().row_idx(), car_state->cur_pos().col_idx());
@@ -77,9 +79,14 @@ Step::StepCode GuideServiceImpl::PlanRoute(int car_id, IntPair cur_pos, IntPair 
   for (int k = 0; k < 5; ++k) {
     IntPair offset = kOffsets[k];
     IntPair neighbor_pos = cur_pos + offset;
-    if (neighbor_pos.Validate(boundary) && (!owner_map.count(neighbor_pos) || owner_map.at(neighbor_pos) == car_id))
-      if (result == Step_StepCode_STOP || offset.DotProduct(cur_to_dst) > 0)
+    if (neighbor_pos.Validate(boundary) && (!owner_map.count(neighbor_pos) || owner_map.at(neighbor_pos) == car_id)) {
+      if (offset.DotProduct(cur_to_dst) > 0) {
         result = (Step::StepCode) k;
+        break;
+      } else if (std::rand() > RAND_MAX / 2) {
+        result = (Step::StepCode) k;
+      }
+    }
   }
   if (cur_pos == dst_pos)
     result = Step_StepCode_STOP;
