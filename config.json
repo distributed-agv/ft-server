@@ -1,0 +1,13 @@
+{
+    "redis_addr": {
+        "host": "127.0.0.1",
+        "port": 6379
+    },
+    "server_addr": {
+        "host": "0.0.0.0",
+        "port": 50051
+    },
+    "row_num": 5,
+    "col_num": 5,
+    "car_num": 2
+}
