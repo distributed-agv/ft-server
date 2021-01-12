@@ -61,7 +61,7 @@ leave:
 int GuideServiceImpl::FetchOwnerMap(redisContext *redis_context, std::map<IntPair, int> &result) {
   redisReply *redis_reply = (redisReply *) redisCommand(redis_context, "HGETALL owner_map");
   
-  if (redis_reply->type == REDIS_REPLY_ERROR)
+  if (redis_reply == NULL || redis_reply->type != REDIS_REPLY_ARRAY)
     return 1;
 
   result.clear();
@@ -115,7 +115,7 @@ int GuideServiceImpl::Commit(redisContext *redis_context, int car_id, int seq, S
     releasing_pos.y
   );
 
-  if (redis_reply->type == REDIS_REPLY_ERROR)
+  if (redis_reply == NULL || redis_reply->type != REDIS_REPLY_STRING)
     return 1;
 
   sscanf(redis_reply->str, "%d", &result);
@@ -137,7 +137,7 @@ int GuideServiceImpl::Recover(redisContext *redis_context, int car_id, int nonce
     car_num
   );
 
-  if (redis_reply->type == REDIS_REPLY_ERROR)
+  if (redis_reply == NULL || redis_reply->type != REDIS_REPLY_STRING)
     return 1;
 
   sscanf(redis_reply->str, "%d", &result);
