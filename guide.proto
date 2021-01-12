@@ -19,6 +19,7 @@ message Step {
     RIGHT = 2;
     FORWARD = 3;
     BACKWARD = 4;
+    RESET = 5;
   }
   StepCode step_code = 1;
 }

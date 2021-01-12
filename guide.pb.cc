@@ -117,11 +117,11 @@ const char descriptor_table_protodef_guide_2eproto[] PROTOBUF_SECTION_VARIABLE(p
   "ate.Position\022$\n\010last_pos\030\004 \001(\0132\022.CarStat"
   "e.Position\022#\n\007dst_pos\030\005 \001(\0132\022.CarState.P"
   "osition\032,\n\010Position\022\017\n\007row_idx\030\001 \001(\005\022\017\n\007"
-  "col_idx\030\002 \001(\005\"o\n\004Step\022!\n\tstep_code\030\001 \001(\016"
-  "2\016.Step.StepCode\"D\n\010StepCode\022\010\n\004STOP\020\000\022\010"
+  "col_idx\030\002 \001(\005\"z\n\004Step\022!\n\tstep_code\030\001 \001(\016"
+  "2\016.Step.StepCode\"O\n\010StepCode\022\010\n\004STOP\020\000\022\010"
   "\n\004LEFT\020\001\022\t\n\005RIGHT\020\002\022\013\n\007FORWARD\020\003\022\014\n\010BACK"
-  "WARD\020\0042*\n\005Guide\022!\n\013GetNextStep\022\t.CarStat"
-  "e\032\005.Step\"\000b\006proto3"
+  "WARD\020\004\022\t\n\005RESET\020\0052*\n\005Guide\022!\n\013GetNextSte"
+  "p\022\t.CarState\032\005.Step\"\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_guide_2eproto_deps[1] = {
 };
@@ -132,7 +132,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_gui
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_guide_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_guide_2eproto = {
-  false, false, descriptor_table_protodef_guide_2eproto, "guide.proto", 378,
+  false, false, descriptor_table_protodef_guide_2eproto, "guide.proto", 389,
   &descriptor_table_guide_2eproto_once, descriptor_table_guide_2eproto_sccs, descriptor_table_guide_2eproto_deps, 3, 0,
   schemas, file_default_instances, TableStruct_guide_2eproto::offsets,
   file_level_metadata_guide_2eproto, 3, file_level_enum_descriptors_guide_2eproto, file_level_service_descriptors_guide_2eproto,
@@ -151,6 +151,7 @@ bool Step_StepCode_IsValid(int value) {
     case 2:
     case 3:
     case 4:
+    case 5:
       return true;
     default:
       return false;
@@ -163,6 +164,7 @@ constexpr Step_StepCode Step::LEFT;
 constexpr Step_StepCode Step::RIGHT;
 constexpr Step_StepCode Step::FORWARD;
 constexpr Step_StepCode Step::BACKWARD;
+constexpr Step_StepCode Step::RESET;
 constexpr Step_StepCode Step::StepCode_MIN;
 constexpr Step_StepCode Step::StepCode_MAX;
 constexpr int Step::StepCode_ARRAYSIZE;

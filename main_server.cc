@@ -19,12 +19,14 @@ int main(int argc, char *argv[]) {
   char *server_host = argv[6];
   char *server_port = argv[7];
   char *commit_script_sha = argv[8];
+  char *recover_script_sha = argv[9];
   GuideServiceImpl service(
     car_num,
     IntPair(row_num, col_num),
     redis_host,
     redis_port,
-    commit_script_sha
+    commit_script_sha,
+    recover_script_sha
   );
   std::string server_addr = std::string(server_host) + ":" + std::string(server_port);
   grpc::ServerBuilder builder;

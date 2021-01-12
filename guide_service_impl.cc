@@ -7,9 +7,9 @@
 
 
 GuideServiceImpl::GuideServiceImpl(int car_num, IntPair boundary, const std::string &redis_host, int redis_port,
-                                   const std::string &commit_script_sha)
+                                   const std::string &commit_script_sha, const std::string &recover_script_sha)
   : car_num(car_num), boundary(boundary), redis_host(redis_host), redis_port(redis_port),
-    commit_script_sha(commit_script_sha) {}
+    commit_script_sha(commit_script_sha), recover_script_sha(recover_script_sha) {}
 
 GuideServiceImpl::~GuideServiceImpl() {}
 
@@ -29,6 +29,12 @@ grpc::Status GuideServiceImpl::GetNextStep(grpc::ServerContext *service_context,
 
   if (redis_context == NULL) {
     result = grpc::Status(grpc::StatusCode::INTERNAL, "RPC server failed to connect to Redis");
+    goto leave;
+  }
+
+  if (seq < 0) {
+    if (Recover(redis_context, car_id, seq, cur_pos, car_num, step_code) != 0)
+      result = grpc::Status(grpc::StatusCode::INTERNAL, "RPC server failed to recover Redis");
     goto leave;
   }
 
@@ -96,7 +102,7 @@ Step::StepCode GuideServiceImpl::PlanRoute(int car_id, IntPair cur_pos, IntPair 
 
 int GuideServiceImpl::Commit(redisContext *redis_context, int car_id, int seq, Step::StepCode step_code,
                              IntPair acquiring_pos, IntPair releasing_pos, Step::StepCode &result) {
-  redisReply *redis_reply =(redisReply *) redisCommand(
+  redisReply *redis_reply = (redisReply *) redisCommand(
     redis_context,
     "EVALSHA %s 0 %d %d %d (%d,%d) (%d,%d)",
     commit_script_sha.c_str(),
@@ -107,6 +113,28 @@ int GuideServiceImpl::Commit(redisContext *redis_context, int car_id, int seq, S
     acquiring_pos.y,
     releasing_pos.x,
     releasing_pos.y
+  );
+
+  if (redis_reply->type == REDIS_REPLY_ERROR)
+    return 1;
+
+  sscanf(redis_reply->str, "%d", &result);
+
+  freeReplyObject(redis_reply);
+  return 0;
+}
+
+int GuideServiceImpl::Recover(redisContext *redis_context, int car_id, int nonce, IntPair cur_pos,
+                              int car_num, Step::StepCode &result) {
+  redisReply *redis_reply = (redisReply *) redisCommand(
+    redis_context,
+    "EVALSHA %s 0 %d %d (%d,%d) %d",
+    recover_script_sha.c_str(),
+    car_id,
+    nonce,
+    cur_pos.x,
+    cur_pos.y,
+    car_num
   );
 
   if (redis_reply->type == REDIS_REPLY_ERROR)

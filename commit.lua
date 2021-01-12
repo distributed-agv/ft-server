@@ -4,6 +4,12 @@ local step_code = ARGV[3]
 local acquiring_pos = ARGV[4]
 local releasing_pos = ARGV[5]
 
+if not redis.call('GET', 'status') then
+    math.randomseed(tonumber(redis.call('TIME')[1]))
+    redis.call('SETNX', 'nonce', tostring(math.random(-2^15, -1)))
+    return redis.call('GET', 'nonce')
+end
+
 seq = tonumber(seq)
 local last_seq = tonumber(redis.call('GET', 'seq:'..car_id))
 if seq + 1 == last_seq then

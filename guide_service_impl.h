@@ -10,7 +10,7 @@
 
 class GuideServiceImpl final : public Guide::Service {
 public:
-  explicit GuideServiceImpl(int, IntPair, const std::string &, int, const std::string &);
+  explicit GuideServiceImpl(int, IntPair, const std::string &, int, const std::string &, const std::string &);
   virtual ~GuideServiceImpl();
   virtual grpc::Status GetNextStep(grpc::ServerContext *, const CarState *, Step *);
 private:
@@ -19,9 +19,11 @@ private:
   std::string redis_host;
   int redis_port;
   std::string commit_script_sha;
+  std::string recover_script_sha;
   int FetchOwnerMap(redisContext *, std::map<IntPair, int> &);
   Step::StepCode PlanRoute(int, IntPair, IntPair, const std::map<IntPair, int> &);
   int Commit(redisContext *, int, int, Step::StepCode, IntPair, IntPair, Step::StepCode &);
+  int Recover(redisContext *, int, int, IntPair, int, Step::StepCode &);
 };
 
 #endif

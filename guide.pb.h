@@ -76,12 +76,13 @@ enum Step_StepCode : int {
   Step_StepCode_RIGHT = 2,
   Step_StepCode_FORWARD = 3,
   Step_StepCode_BACKWARD = 4,
+  Step_StepCode_RESET = 5,
   Step_StepCode_Step_StepCode_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   Step_StepCode_Step_StepCode_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool Step_StepCode_IsValid(int value);
 constexpr Step_StepCode Step_StepCode_StepCode_MIN = Step_StepCode_STOP;
-constexpr Step_StepCode Step_StepCode_StepCode_MAX = Step_StepCode_BACKWARD;
+constexpr Step_StepCode Step_StepCode_StepCode_MAX = Step_StepCode_RESET;
 constexpr int Step_StepCode_StepCode_ARRAYSIZE = Step_StepCode_StepCode_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Step_StepCode_descriptor();
@@ -579,6 +580,8 @@ class Step PROTOBUF_FINAL :
     Step_StepCode_FORWARD;
   static constexpr StepCode BACKWARD =
     Step_StepCode_BACKWARD;
+  static constexpr StepCode RESET =
+    Step_StepCode_RESET;
   static inline bool StepCode_IsValid(int value) {
     return Step_StepCode_IsValid(value);
   }
