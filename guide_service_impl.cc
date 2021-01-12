@@ -58,23 +58,27 @@ leave:
   return result;
 }
 
-int GuideServiceImpl::FetchOwnerMap(redisContext *redis_context, std::map<IntPair, int> &result) {
+int GuideServiceImpl::FetchOwnerMap(redisContext *redis_context, std::map<IntPair, int> &owner_map_out) {
+  int result = 0;
   redisReply *redis_reply = (redisReply *) redisCommand(redis_context, "HGETALL owner_map");
   
-  if (redis_reply == NULL || redis_reply->type != REDIS_REPLY_ARRAY)
-    return 1;
+  if (redis_reply == NULL || redis_reply->type != REDIS_REPLY_ARRAY) {
+    result = 1;
+    goto leave;
+  }
 
-  result.clear();
+  owner_map_out.clear();
   for (int i = 0; i < redis_reply->elements; i += 2) {
     IntPair pos;
     int car_id = 0;
     sscanf(redis_reply->element[i]->str, "(%d,%d)", &pos.x, &pos.y);
     sscanf(redis_reply->element[i + 1]->str, "%d", &car_id);
-    result[pos] = car_id;
+    owner_map_out[pos] = car_id;
   }
   
+leave:
   freeReplyObject(redis_reply);
-  return 0;
+  return result;
 }
 
 Step::StepCode GuideServiceImpl::PlanRoute(int car_id, IntPair cur_pos, IntPair dst_pos,
@@ -101,7 +105,8 @@ Step::StepCode GuideServiceImpl::PlanRoute(int car_id, IntPair cur_pos, IntPair 
 }
 
 int GuideServiceImpl::Commit(redisContext *redis_context, int car_id, int seq, Step::StepCode step_code,
-                             IntPair acquiring_pos, IntPair releasing_pos, Step::StepCode &result) {
+                             IntPair acquiring_pos, IntPair releasing_pos, Step::StepCode &step_code_out) {
+  int result = 0;
   redisReply *redis_reply = (redisReply *) redisCommand(
     redis_context,
     "EVALSHA %s 0 %d %d %d (%d,%d) (%d,%d)",
@@ -115,17 +120,21 @@ int GuideServiceImpl::Commit(redisContext *redis_context, int car_id, int seq, S
     releasing_pos.y
   );
 
-  if (redis_reply == NULL || redis_reply->type != REDIS_REPLY_STRING)
-    return 1;
+  if (redis_reply == NULL || redis_reply->type != REDIS_REPLY_STRING) {
+    result = 1;
+    goto leave;
+  }
 
-  sscanf(redis_reply->str, "%d", &result);
+  sscanf(redis_reply->str, "%d", &step_code_out);
 
+leave:
   freeReplyObject(redis_reply);
-  return 0;
+  return result;
 }
 
 int GuideServiceImpl::Recover(redisContext *redis_context, int car_id, int nonce, IntPair cur_pos,
-                              int car_num, Step::StepCode &result) {
+                              int car_num, Step::StepCode &step_code_out) {
+  int result = 0;
   redisReply *redis_reply = (redisReply *) redisCommand(
     redis_context,
     "EVALSHA %s 0 %d %d (%d,%d) %d",
@@ -137,11 +146,14 @@ int GuideServiceImpl::Recover(redisContext *redis_context, int car_id, int nonce
     car_num
   );
 
-  if (redis_reply == NULL || redis_reply->type != REDIS_REPLY_STRING)
-    return 1;
+  if (redis_reply == NULL || redis_reply->type != REDIS_REPLY_STRING) {
+    result = 1;
+    goto leave;
+  }
 
-  sscanf(redis_reply->str, "%d", &result);
+  sscanf(redis_reply->str, "%d", &step_code_out);
 
+leave:
   freeReplyObject(redis_reply);
-  return 0;
+  return result;
 }
