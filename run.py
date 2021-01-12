@@ -1,16 +1,15 @@
 import redis
 import json
 import subprocess
+import hashlib
 
 
 if __name__ == '__main__':
     config = json.load(open('config.json', 'r'))
-    commit_script = open('commit.lua', 'r').read()
-    recover_script = open('recover.lua', 'r').read()
-
-    r = redis.Redis(config['redis_addr']['host'], config['redis_addr']['port'])
-    commit_script_sha = r.script_load(commit_script)
-    recover_script_sha = r.script_load(recover_script)
+    commit_script = open('commit.lua', 'r').read().encode('utf8')
+    recover_script = open('recover.lua', 'r').read().encode('utf8')
+    commit_script_sha = hashlib.sha1(commit_script).hexdigest()
+    recover_script_sha = hashlib.sha1(recover_script).hexdigest()
 
     subprocess.call([
         'build/server',
