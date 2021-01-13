@@ -10,6 +10,10 @@ if not redis.call('GET', 'status') then
     return redis.call('GET', 'nonce')
 end
 
+if redis.call('SISMEMBER', 'car_ids', car_id) == 0 then
+    return '0'
+end
+
 seq = tonumber(seq)
 local last_seq = tonumber(redis.call('GET', 'seq:'..car_id))
 if seq + 1 == last_seq then
