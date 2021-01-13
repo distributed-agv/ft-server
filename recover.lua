@@ -8,7 +8,8 @@ if redis.call('GET', 'status') then
 elseif nonce == redis.call('GET', 'nonce') then
     redis.call('SET', 'seq:'..car_id, '0')
     redis.call('HSET', 'owner_map', cur_pos, car_id)
-    if redis.call('HLEN', 'owner_map') == tonumber(car_num) then
+    redis.call('SADD', 'car_ids', car_id)
+    if redis.call('SCARD', 'car_ids') == tonumber(car_num) then
         redis.call('SET', 'status', 'NORMAL')
         return '5'
     end
