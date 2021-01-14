@@ -1,3 +1,6 @@
 [submodule "hiredis"]
 	path = hiredis
 	url = https://github.com/redis/hiredis.git
+[submodule "car-locator"]
+	path = car-locator
+	url = git@github.com:distributed-agv/car-locator.git
