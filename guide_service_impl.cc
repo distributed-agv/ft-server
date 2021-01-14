@@ -4,6 +4,9 @@
 #include "util.h"
 #include <grpc/grpc.h>
 #include <cstdlib>
+#include <unistd.h>
+#include <string>
+#include <cstring>
 
 
 GuideServiceImpl::GuideServiceImpl(int car_num, IntPair boundary, const std::string &redis_host, int redis_port,
@@ -33,8 +36,16 @@ grpc::Status GuideServiceImpl::GetNextStep(grpc::ServerContext *service_context,
   }
 
   if (seq < 0) {
-    if (Recover(redis_context, car_id, seq, cur_pos, car_num, step_code) != 0)
+    bool reset_timer_success = false;
+    if (Recover(redis_context, car_id, seq, cur_pos, car_num, step_code) != 0) {
       result = grpc::Status(grpc::StatusCode::INTERNAL, "RPC server failed to recover Redis");
+      goto leave;
+    }
+    if ((int) step_code < 0 && ResetTimer(redis_context, reset_timer_success) == 0 && reset_timer_success) {
+      pid_t pid = fork();
+      if (pid == 0)
+        execlp("python3", "python3", "car-locator/locator_recover.py", "-d", "-n", std::to_string(seq).c_str(), NULL);
+    }
     goto leave;
   }
 
@@ -152,6 +163,22 @@ int GuideServiceImpl::Recover(redisContext *redis_context, int car_id, int nonce
   }
 
   sscanf(redis_reply->str, "%d", &step_code_out);
+
+leave:
+  freeReplyObject(redis_reply);
+  return result;
+}
+
+int GuideServiceImpl::ResetTimer(redisContext *redis_context, bool &success_out) {
+  int result = 0;
+  redisReply *redis_reply = (redisReply *) redisCommand(redis_context, "SET timer TIMER PX 5000 NX");
+  
+  if (redis_reply == NULL || (redis_reply->type != REDIS_REPLY_NIL && redis_reply->type != REDIS_REPLY_STATUS)) {
+    result = 1;
+    goto leave;
+  }
+  
+  success_out = redis_reply->type != REDIS_REPLY_NIL;
 
 leave:
   freeReplyObject(redis_reply);

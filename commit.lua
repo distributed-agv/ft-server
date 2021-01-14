@@ -5,9 +5,14 @@ local acquiring_pos = ARGV[4]
 local releasing_pos = ARGV[5]
 
 if not redis.call('GET', 'status') then
-    math.randomseed(tonumber(redis.call('TIME')[1]))
-    redis.call('SETNX', 'nonce', tostring(math.random(-2^15, -1)))
-    return redis.call('GET', 'nonce')
+    local nonce = redis.call('GET', 'nonce')
+    if not nonce then
+        math.randomseed(tonumber(redis.call('TIME')[1]))
+        nonce = tostring(math.random(-2^15, -1))
+        redis.call('SET', 'nonce', nonce)
+        redis.call('SET', 'timer', 'TIMER', 'PX', '5000')
+    end
+    return nonce
 end
 
 if redis.call('SISMEMBER', 'car_ids', car_id) == 0 then

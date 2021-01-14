@@ -24,6 +24,7 @@ private:
   Step::StepCode PlanRoute(int, IntPair, IntPair, const std::map<IntPair, int> &);
   int Commit(redisContext *, int, int, Step::StepCode, IntPair, IntPair, Step::StepCode &);
   int Recover(redisContext *, int, int, IntPair, int, Step::StepCode &);
+  int ResetTimer(redisContext *, bool &);
 };
 
 #endif
