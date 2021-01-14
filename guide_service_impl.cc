@@ -171,7 +171,7 @@ leave:
 
 int GuideServiceImpl::ResetTimer(redisContext *redis_context, bool &success_out) {
   int result = 0;
-  redisReply *redis_reply = (redisReply *) redisCommand(redis_context, "SET timer TIMER PX 5000 NX");
+  redisReply *redis_reply = (redisReply *) redisCommand(redis_context, "SET timer TIMER PX 60000 NX");
   
   if (redis_reply == NULL || (redis_reply->type != REDIS_REPLY_NIL && redis_reply->type != REDIS_REPLY_STATUS)) {
     result = 1;

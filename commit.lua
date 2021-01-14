@@ -10,7 +10,7 @@ if not redis.call('GET', 'status') then
         math.randomseed(tonumber(redis.call('TIME')[1]))
         nonce = tostring(math.random(-2^15, -1))
         redis.call('SET', 'nonce', nonce)
-        redis.call('SET', 'timer', 'TIMER', 'PX', '5000')
+        redis.call('SET', 'timer', 'TIMER', 'PX', '60000')
     end
     return nonce
 end
