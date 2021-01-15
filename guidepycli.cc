@@ -27,7 +27,7 @@ PyAPI_FUNC(PyObject *) guidepycli_make_stub(PyObject *self, PyObject *args) {
   Guide::Stub *stub = NULL;
 
   if (!PyArg_ParseTuple(args, "s", &server_addr))
-    return PyErr_Format(PyExc_RuntimeError, "");
+    return PyErr_Format(PyExc_RuntimeError, "Bad argument");
 
   credentials = grpc::InsecureChannelCredentials();
   channel = grpc::CreateChannel(server_addr, credentials);
@@ -57,11 +57,11 @@ PyAPI_FUNC(PyObject *) guidepycli_get_next_step(PyObject *self, PyObject *args) 
 
   if (!PyArg_ParseTuple(args, "Oiiiiiiii", &py_object, &car_id, &seq,
                         &cur_row_idx, &cur_col_idx, &last_row_idx, &last_col_idx, &dst_row_idx, &dst_col_idx))
-    return PyErr_Format(PyExc_RuntimeError, "");
+    return PyErr_Format(PyExc_RuntimeError, "Bad argument");
   if (PyCObject_Check(py_object))
     stub = (Guide::Stub *) ((PyCObject *) py_object)->cobject;
   else
-    return PyErr_Format(PyExc_RuntimeError, "");
+    return PyErr_Format(PyExc_RuntimeError, "Bad argument");
 
   cur_pos = new CarState_Position;
   last_pos = new CarState_Position;
@@ -80,7 +80,7 @@ PyAPI_FUNC(PyObject *) guidepycli_get_next_step(PyObject *self, PyObject *args) 
 
   status = stub->GetNextStep(&context, car_state, &step);
   if (!status.ok())
-    return PyErr_Format(PyExc_RuntimeError, "");
+    return PyErr_Format(PyExc_RuntimeError, status.error_message().c_str());
   
   return PyInt_FromLong(step.step_code());
 }
