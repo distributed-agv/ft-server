@@ -1,18 +1,23 @@
 import redis
 import json
 import subprocess
-import hashlib
 
 
 if __name__ == '__main__':
     config = json.load(open('config.json', 'r'))
-    commit_script = open('commit.lua', 'r').read().encode('utf8')
-    recover_script = open('recover.lua', 'r').read().encode('utf8')
-    commit_script_sha = hashlib.sha1(commit_script).hexdigest()
-    recover_script_sha = hashlib.sha1(recover_script).hexdigest()
+    commit_script = open('commit.lua', 'r').read()
+    recover_script = open('recover.lua', 'r').read()
+    getlock_script = open('getLock.lua', 'r').read()
+    locator_recover_script = open('car-locator/locator_recover.lua', 'r').read()
+
+    r = redis.Redis(config['redis_addr']['host'], config['redis_addr']['port'])
+    commit_script_sha = r.script_load(commit_script)
+    recover_script_sha = r.script_load(recover_script)
+    getlock_script_sha = r.script_load(getlock_script)
+    r.script_load(locator_recover_script)
 
     subprocess.call([
-        'build/server',
+        'build/main',
         str(config['car_num']),
         str(config['row_num']),
         str(config['col_num']),
@@ -22,4 +27,5 @@ if __name__ == '__main__':
         str(config['server_addr']['port']),
         commit_script_sha,
         recover_script_sha,
+        getlock_script_sha,
     ])

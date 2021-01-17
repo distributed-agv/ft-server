@@ -1,16 +1,17 @@
-#include "guide_service_impl.h"
+#include "guide_server_impl.h"
+
 #include "util.h"
 #include <cstdlib>
+#include <vector>
 #include <string>
 #include <utility>
 #include <memory>
 #include <iostream>
-#include <vector>
 #include <grpcpp/server.h>
 #include <grpcpp/server_builder.h>
 #include <grpcpp/security/server_credentials.h>
-
-int main(int argc, char *argv[]) {
+using namespace std;
+int main(int argc, char *argv[])  {
   int car_num = std::atoi(argv[1]);
   int row_num = std::atoi(argv[2]);
   int col_num = std::atoi(argv[3]);
@@ -20,13 +21,15 @@ int main(int argc, char *argv[]) {
   char *server_port = argv[7];
   char *commit_script_sha = argv[8];
   char *recover_script_sha = argv[9];
+  char *getlock_script_sha = argv[10];
   GuideServiceImpl service(
     car_num,
     IntPair(row_num, col_num),
     redis_host,
     redis_port,
     commit_script_sha,
-    recover_script_sha
+    recover_script_sha,
+    getlock_script_sha
   );
   std::string server_addr = std::string(server_host) + ":" + std::string(server_port);
   grpc::ServerBuilder builder;
