@@ -5,6 +5,12 @@ local car_num = ARGV[4]
 
 if redis.call('GET', 'status') then
     return '5'
+elseif not redis.call('GET', 'nonce') then
+    math.randomseed(tonumber(redis.call('TIME')[1]))
+    nonce = tostring(math.random(-2^15, -1))
+    redis.call('SET', 'nonce', nonce)
+    redis.call('SET', 'timer', 'TIMER', 'PX', '60000')
+    return nonce
 elseif nonce == redis.call('GET', 'nonce') then
     redis.call('SET', 'seq:'..car_id, '0')
     redis.call('HSET', 'owner_map', cur_pos, car_id)
