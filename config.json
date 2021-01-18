@@ -7,7 +7,7 @@
         "host": "0.0.0.0",
         "port": 50051
     },
-    "row_num": 10,
-    "col_num": 10,
-    "car_num": 5
+    "row_num": 5,
+    "col_num": 5,
+    "car_num": 2
 }

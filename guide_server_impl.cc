@@ -128,7 +128,10 @@ int  GuideServiceImpl::findNextStep(int x,int y,int &nextX,int &nextY,int car,in
       int tmpY;
       sscanf(redis_reply->element[i]->str, "(%d,%d)", &tmpX, &tmpY);
       sscanf(redis_reply->element[i + 1]->str, "%d", &car_id);
-      map[tmpX][tmpY]=car_id;
+      if(car_id==-1)
+        map[tmpX][tmpY]=car+1;
+      else 
+        map[tmpX][tmpY]=car_id;
     }
    
     Astar astar(l-1,w-1,car);
@@ -255,6 +258,9 @@ grpc::Status GuideServiceImpl::GetNextStep(grpc::ServerContext *service_context,
     return result;
   }
   freeReplyObject(lua_exit);
+
+
+
   //判断是否处于恢复数据库状态
   if(seq<0){
     redisReply *redis_reply = (redisReply *) redisCommand(
@@ -288,8 +294,10 @@ grpc::Status GuideServiceImpl::GetNextStep(grpc::ServerContext *service_context,
     }
     redisFree(redis_context);
     step->set_step_code((Step::StepCode)next_step);
+    cout<<next_step<<"jjjj"<<endl;
     return result;
   }
+
 
   //判断是否过期请求
   string tmp= "seq:"+ to_string(car_id);
@@ -299,11 +307,6 @@ grpc::Status GuideServiceImpl::GetNextStep(grpc::ServerContext *service_context,
     freeReplyObject(reply);
     redisFree(redis_context);
     return result;
-  }
-  if(reply->type == REDIS_REPLY_NIL){
-      string tmp= "seq:"+ to_string(car_id);
-      string seqTmp=to_string(0);
-      redisCommand(redis_context, "SETNX %s %s", tmp.data(),seqTmp.data());
   }
 
   freeReplyObject(reply);

@@ -14,6 +14,13 @@ elseif nonce == redis.call('GET', 'nonce') then
         return '5'
     end
     return nonce
-else
+elseif not redis.call('GET', 'nonce') then
+    local new_nonce = redis.call('GET', 'nonce')
+    math.randomseed(tonumber(redis.call('TIME')[1]))
+    new_nonce = tostring(math.random(-2^15, -1))
+    redis.call('SET', 'nonce', new_nonce)
+    redis.call('SET', 'timer', 'TIMER', 'PX', '60000')
+    return new_nonce
+else 
     return '0'
 end
