@@ -10,6 +10,8 @@
 #include <grpcpp/create_channel.h>
 #include <grpcpp/security/credentials.h>
 
+static void delete_stub(void *);
+
 PyMethodDef GuidePyCliMethods[] = {
   {"make_stub", guidepycli_make_stub, METH_VARARGS, ""},
   {"get_next_step", guidepycli_get_next_step, METH_VARARGS, ""},
@@ -33,7 +35,7 @@ PyAPI_FUNC(PyObject *) guidepycli_make_stub(PyObject *self, PyObject *args) {
   channel = grpc::CreateChannel(server_addr, credentials);
   stub = Guide::NewStub(channel).release();
   
-  return PyCObject_FromVoidPtr(stub, std::free);
+  return PyCObject_FromVoidPtr(stub, delete_stub);
 }
 
 PyAPI_FUNC(PyObject *) guidepycli_get_next_step(PyObject *self, PyObject *args) {
@@ -83,4 +85,8 @@ PyAPI_FUNC(PyObject *) guidepycli_get_next_step(PyObject *self, PyObject *args) 
     return PyErr_Format(PyExc_RuntimeError, status.error_message().c_str());
   
   return PyInt_FromLong(step.step_code());
+}
+
+static void delete_stub(void *stub) {
+  delete (Guide::Stub *) stub;
 }
